@@ -10,7 +10,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: meu-primeiro-bucket-inadikmefc # Nome do bucket precisa ser único em toda a AWS.
+      BucketName: meu-primeiro-bucket-belisco # Nome do bucket precisa ser único em toda a AWS.
 
       # Existem mais propriedades opcionais para um bucket S3 que você pode ver aqui:
       # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-s3-bucket.html
