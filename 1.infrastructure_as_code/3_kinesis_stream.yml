@@ -1,0 +1,138 @@
+Description: Cria um Kinesis Stream e um Kinesis Data Firehose que vai salvar o stream de dados para um bucket S3.
+
+Resources:
+
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: kinesis-stream
+      RetentionPeriodHours: 24
+      ShardCount: 1
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId: alias/aws/kinesis
+
+  KinesisFirehoseS3Destination:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: kinesis-firehose-delivery-stream
+      DeliveryStreamType: KinesisStreamAsSource
+      KinesisStreamSourceConfiguration:
+        KinesisStreamARN: !GetAtt KinesisStream.Arn
+        RoleARN: !GetAtt KinesisRole.Arn
+      S3DestinationConfiguration:
+        BucketARN: !GetAtt KinesisFirehoseBucket.Arn
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 1
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref KinesisLogGroup
+          LogStreamName: !Ref KinesisLogStream
+        CompressionFormat: ZIP
+        EncryptionConfiguration:
+          KMSEncryptionConfig:
+            AWSKMSKeyARN: !GetAtt FirehoseEncryptionKey.Arn
+        ErrorOutputPrefix: bad_record_
+        RoleARN: !GetAtt KinesisRole.Arn
+
+  KinesisLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: kinesis-firehose-delivery-stream-log-group
+      RetentionInDays: 1
+
+  KinesisLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref KinesisLogGroup
+      LogStreamName: kinesis-firehose-delivery-stream-log-stream
+
+  KinesisFirehoseBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref FirehoseEncryptionKey
+      BucketName: kinesis-firehose-bucket-belisco
+
+  FirehoseEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Key for kinesis firehose
+      Enabled: true
+      EnableKeyRotation: true
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Action: kms:*
+            Resource: '*'
+
+
+  KinesisRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Role to allow Kinesis to save data to S3
+      ManagedPolicyArns:
+        - !Ref KinesisPolicy
+      Path: /
+      RoleName: role-kinesis
+
+
+  KinesisPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to allow kinesis to access S3
+      Path: /
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:AbortMultipartUpload
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:ListBucketMultipartUploads
+              - s3:PutObject
+            Resource:
+              - !GetAtt KinesisFirehoseBucket.Arn
+              - !Join ["/", [!GetAtt KinesisFirehoseBucket.Arn, "*"]]
+          - Effect: Allow
+            Action:
+              - kinesis:DescribeStream
+              - kinesis:GetShardIterator
+              - kinesis:GetRecords
+              - kinesis:ListShards
+            Resource:
+              - !GetAtt KinesisStream.Arn
+          - Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:List*
+              - kms:DescribeKey
+            Resource:
+              - !GetAtt FirehoseEncryptionKey.Arn
+          - Effect: Allow
+            Action:
+              - logs:PutLogEvents
+            Resource:
+              - arn:aws:logs:*:*:*
+
