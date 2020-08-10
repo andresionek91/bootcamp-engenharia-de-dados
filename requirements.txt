@@ -1,2 +1,2 @@
 boto3
-Faker
+fake-web-events

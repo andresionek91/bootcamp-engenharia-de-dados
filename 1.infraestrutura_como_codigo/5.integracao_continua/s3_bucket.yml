@@ -1,0 +1,8 @@
+Description: Cria um Bucket S3
+
+Resources:
+
+  MeuPrimeiroBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: meu-segundo-bucket-belisco
