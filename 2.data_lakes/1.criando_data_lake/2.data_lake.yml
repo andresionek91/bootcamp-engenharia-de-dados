@@ -1,0 +1,63 @@
+Description: Creates Data Lake
+
+Resources:
+
+  DataLakeRawBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-raw
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  DataLakeProcessedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-processed
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  DataLakeCuratedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-curated
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+
+Outputs:
+  DataLakeRawBucketArn:
+    Value: !GetAtt DataLakeRawBucket.Arn
+    Export:
+      Name: data-lake-DataLakeRawBucketArn
+
+  DataLakeProcessedBucketArn:
+    Value: !GetAtt DataLakeProcessedBucket.Arn
+    Export:
+      Name: data-lake-DataLakeProcessedBucketArn
+
+  DataLakeCuratedBucketArn:
+    Value: !GetAtt DataLakeCuratedBucket.Arn
+    Export:
+      Name: data-lake-DataLakeCuratedBucketArn
+
+  DataLakeRawBucketName:
+    Value: !Ref DataLakeRawBucket
+    Export:
+      Name: data-lake-DataLakeRawBucketName
+
+  DataLakeProcessedBucketName:
+    Value: !Ref DataLakeProcessedBucket
+    Export:
+      Name: data-lake-DataLakeProcessedBucketName
+
+  DataLakeCuratedBucketName:
+    Value: !Ref DataLakeCuratedBucket
+    Export:
+      Name: data-lake-DataLakeCuratedBucketName
+
