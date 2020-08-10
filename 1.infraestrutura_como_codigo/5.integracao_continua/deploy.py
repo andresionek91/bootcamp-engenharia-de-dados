@@ -60,7 +60,7 @@ def _get_abs_path(path):
 
 
 def create_or_update_stack():
-    stack_name = 's3_bucket_ci'
+    stack_name = 's3-bucket-ci'
     with open(_get_abs_path('s3_bucket.yml')) as f:
         template_body = f.read()
 
