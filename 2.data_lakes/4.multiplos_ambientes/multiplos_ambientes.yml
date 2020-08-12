@@ -1,0 +1,14 @@
+Description:
+
+Parameters:
+  ENVIRONMENT:
+    Description: Nome do ambiente para fazer deploy do stack
+    Type: String
+    AllowedValues: [dev, staging, production]
+
+Resources:
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub s3-belisco-${ENVIRONMENT}-bucket

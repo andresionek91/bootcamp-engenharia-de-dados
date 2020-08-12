@@ -1,2 +1,3 @@
 boto3
 fake-web-events
+pyathena

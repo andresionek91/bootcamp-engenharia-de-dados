@@ -9,7 +9,7 @@ Resources:
       DatabaseInput:
         Description: Raw data
         LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeRawBucketName]]
-        Name: data-lake-raw
+        Name: data_lake_raw
 
   DataLakeProcessedDatabase:
     Type: AWS::Glue::Database
@@ -18,7 +18,7 @@ Resources:
       DatabaseInput:
         Description: Processed data
         LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeProcessedBucketName]]
-        Name: data-lake-processed
+        Name: data_lake_processed
 
   DataLakeCuratedDatabase:
     Type: AWS::Glue::Database
@@ -27,7 +27,7 @@ Resources:
       DatabaseInput:
         Description: Curated data
         LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeCuratedBucketName]]
-        Name: data-lake-curated
+        Name: data_lake_curated
 
   RawTitanicTable:
     Type: AWS::Glue::Table
@@ -38,45 +38,48 @@ Resources:
         Description: Tabela com dados do dataset do Titanic
         Name: titanic
         Owner: data-engineering
+        Parameters:
+          skip.header.line.count: 1
         StorageDescriptor:
           InputFormat: org.apache.hadoop.mapred.TextInputFormat
           OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
           Location: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeRawBucketName, 'titanic']]
           SerdeInfo:
             Parameters:
-              field.delim: ','
-              serialization.format: ','
-            SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              separatorChar: ','
+              escapeChar: '\'
+              quoteChar: '"'
+            SerializationLibrary: org.apache.hadoop.hive.serde2.OpenCSVSerde
           Columns:
             - Name: PassengerId
-              Type: integer
+              Type: string
 
             - Name: Pclass
-              Type: integer
+              Type: string
 
             - Name: Name
               Type: string
 
             - Name: Sex
-              Type: integer
+              Type: string
 
             - Name: Age
-              Type: float
+              Type: string
 
             - Name: SibSp
-              Type: integer
+              Type: string
 
             - Name: Parch
-              Type: integer
+              Type: string
 
             - Name: Ticket
-              Type: float
+              Type: string
 
             - Name: Fare
-              Type: float
+              Type: string
 
             - Name: Cabin
-              Type: integer
+              Type: string
 
             - Name: Embarked
               Type: string
