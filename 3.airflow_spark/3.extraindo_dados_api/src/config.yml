@@ -1,0 +1,6 @@
+bucket: s3-belisco-production-data-lake-raw
+coins:
+  - BCH
+  - BTC
+  - ETH
+  - LTC
