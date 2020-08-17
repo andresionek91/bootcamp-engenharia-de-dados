@@ -32,7 +32,7 @@ Resources:
             Status: Enabled
             NoncurrentVersionTransitions:
               - StorageClass: STANDARD_IA
-                TransitionInDays: 15
+                TransitionInDays: 30
 
   DataLakeProcessedBucket:
     Type: AWS::S3::Bucket
