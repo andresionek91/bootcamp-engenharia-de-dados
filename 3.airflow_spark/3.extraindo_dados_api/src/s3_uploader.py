@@ -14,7 +14,7 @@ def upload_to_s3(bucket, schema, table, partition, json_data):
     """
     now = datetime.now()
     now_string = now.strftime("%Y-%m-%d-%H-%M-%S-%f")
-    key = f'{schema}/{table}/date={partition}/{schema}_{table}_{now_string}.json'
+    key = f'{schema}/{table}/execution_date={partition}/{schema}_{table}_{now_string}.json'
 
     logging.info(f'Uploading file to S3 with key: {key}')
 
