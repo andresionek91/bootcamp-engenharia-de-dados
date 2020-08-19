@@ -146,10 +146,6 @@ Resources:
             - Classification: export
               ConfigurationProperties:
                 PYSPARK_PYTHON: /usr/bin/python3
-        - Classification: emrfs-site
-          ConfigurationProperties:
-            fs.s3.enableServerSideEncryption: true
-            fs.s3.serverSideEncryption.kms.keyId: !ImportValue DataLakeEncryptionKeyId
 
   StreamingStep:
     Type: AWS::EMR::Step
