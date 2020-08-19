@@ -37,7 +37,7 @@ Resources:
             AWSKMSKeyARN: !ImportValue DataLakeEncryptionKeyArn
         ErrorOutputPrefix: bad_record_
         RoleARN: !GetAtt KinesisRole.Arn
-        Prefix: "atomic_events/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}"
+        Prefix: "atomic_events/date=!{timestamp:yyyy}-!{timestamp:MM}-!{timestamp:dd}/"
 
   KinesisLogGroup:
     Type: AWS::Logs::LogGroup

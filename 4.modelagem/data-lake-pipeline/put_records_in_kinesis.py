@@ -1,7 +1,6 @@
 import boto3
 import json
 from fake_web_events import Simulation
-import os
 
 
 client = boto3.client('kinesis')
@@ -11,7 +10,8 @@ def put_record(event):
     data = json.dumps(event).encode('utf-8')
     response = client.put_record(
         StreamName='kinesis-raw-events-stream',
-        Data=data
+        Data=data,
+        PartitionKey="test"
     )
     return response
 
