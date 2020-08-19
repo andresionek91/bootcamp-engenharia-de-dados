@@ -55,18 +55,19 @@ if __name__ == "__main__":
         .format("kinesis") \
         .option("streamName", streamName) \
         .option("endpointUrl", f"https://kinesis.{regionName}.amazonaws.com") \
-        .option("startingposition", "earliest") \
+        .option("initialPosition", "TRIM_HORIZON") \
         .load()
 
     logger.info(f"Read Stream")
 
-    kinesisDF.selectExpr("cast(data as STRING) as jsonData") \
+    kinesisDF = kinesisDF.selectExpr("cast(data as STRING) as jsonData") \
         .select(F.from_json("jsonData", dataSchema).alias("event")) \
         .select("event.*") \
-        .withColumn("event_date", F.to_date(F.col("event_timestamp"))) \
-        .withColumn('_processed_etl_timestamp', F.current_timestamp()) \
-        .writeStream \
-        .partitionBy("event_date") \
+        .withColumn('_processed_etl_timestamp', F.current_timestamp())
+
+    query = kinesisDF.writeStream \
         .format("parquet") \
         .option("checkpointLocation", "s3://s3-belisco-production-emr/checkpoints/atomic_events") \
         .start("s3://s3-belisco-production-data-lake-processed/atomic_events")
+
+    query.awaitTermination()

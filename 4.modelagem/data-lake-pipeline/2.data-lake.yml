@@ -132,6 +132,61 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
 
+  IamRoleDataLakeGlue:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: iam-role-service-datalake-glue
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: sts:AssumeRole
+          - Sid: TrustRelationship
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - Ref: IamAccessPolicyDataLakeGlue
+      Path: /
+
+  IamProfileDataLakeGlue:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: IamRoleDataLakeGlue
+    Properties:
+      Path: /
+      Roles:
+        - Ref: IamRoleDataLakeGlue
+
+  IamAccessPolicyDataLakeGlue:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to give Glue role access to data lake
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - glue:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - arn:aws:logs:*:*:/aws-glue/*
+
 Outputs:
   DataLakeRawBucket:
     Value: !Ref DataLakeRawBucket

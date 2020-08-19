@@ -8,9 +8,6 @@ Resources:
       Name: kinesis-raw-events-stream
       RetentionPeriodHours: 24
       ShardCount: 1
-      StreamEncryption:
-        EncryptionType: KMS
-        KeyId: !ImportValue DataLakeEncryptionKeyId
 
   KinesisFirehoseS3Destination:
     Type: AWS::KinesisFirehose::DeliveryStream
@@ -32,9 +29,6 @@ Resources:
           LogGroupName: !Ref KinesisLogGroup
           LogStreamName: !Ref RawEventsLogStream
         CompressionFormat: ZIP
-        EncryptionConfiguration:
-          KMSEncryptionConfig:
-            AWSKMSKeyARN: !ImportValue DataLakeEncryptionKeyArn
         ErrorOutputPrefix: bad_record_
         RoleARN: !GetAtt KinesisRole.Arn
         Prefix: "atomic_events/date=!{timestamp:yyyy}-!{timestamp:MM}-!{timestamp:dd}/"
@@ -158,11 +152,11 @@ Resources:
           - cluster
           - --master
           - yarn
+          - --jars
+          - !Sub s3://${EMRBucket}/jobs/spark-sql-kinesis_2.11-1.1.3-spark_2.4.jar
           - --conf
           - "log4j.rootCategory=INFO, console"
-          - --packages
-          - 'com.qubole.spark/spark-sql-kinesis_2.11/1.1.3-spark_2.4'
-          - !Sub "s3://${EMRBucket}/jobs/streaming.py"
+          - !Sub s3://${EMRBucket}/jobs/streaming.py
           - !Ref KinesisStream
           - !Ref 'AWS::Region'
         Jar: command-runner.jar

@@ -46,12 +46,12 @@ Resources:
       Memory: 1024
       ExecutionRoleArn: !Ref ECSTaskRole
       TaskRoleArn: !Ref ECSTaskRole
-      Family: "dev-crypto-extract-image"
+      Family: "production-crypto-extract-image"
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
-        - Name: "dev-crypto-extract-image"
+        - Name: "production-crypto-extract-image"
           Image: !Sub
             - "${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/dev-crypto-extract-image:latest"
             - ecr_repository: crypto-extract-image
