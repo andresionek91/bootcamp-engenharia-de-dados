@@ -5,7 +5,7 @@ Vamos ver os sguintes tópicos:
 * Criando buckets no S3 
 * Criando um banco de dados Redshift 
 * Criando um stream de dados usando Kinesis 
-* IAM / VPC / KMS
+* Gerenciando Permissões
 * Conectando uma ferramenta de BI ao Redshift
 
 
