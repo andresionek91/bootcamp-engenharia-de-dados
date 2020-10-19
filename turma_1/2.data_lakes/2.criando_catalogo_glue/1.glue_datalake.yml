@@ -1,0 +1,167 @@
+Description: Firehose to ingest data
+
+Resources:
+
+  DataLakeRawDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Raw data
+        LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeRawBucketName]]
+        Name: data_lake_raw
+
+  DataLakeProcessedDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Processed data
+        LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeProcessedBucketName]]
+        Name: data_lake_processed
+
+  DataLakeCuratedDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Curated data
+        LocationUri: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeCuratedBucketName]]
+        Name: data_lake_curated
+
+  RawTitanicTable:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref DataLakeRawDatabase
+      TableInput:
+        Description: Tabela com dados do dataset do Titanic
+        Name: titanic
+        Owner: data-engineering
+        Parameters:
+          skip.header.line.count: 1
+        StorageDescriptor:
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          Location: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeRawBucketName, 'titanic']]
+          SerdeInfo:
+            Parameters:
+              separatorChar: ','
+              escapeChar: '\'
+              quoteChar: '"'
+            SerializationLibrary: org.apache.hadoop.hive.serde2.OpenCSVSerde
+          Columns:
+            - Name: PassengerId
+              Type: string
+
+            - Name: Pclass
+              Type: string
+
+            - Name: Name
+              Type: string
+
+            - Name: Sex
+              Type: string
+
+            - Name: Age
+              Type: string
+
+            - Name: SibSp
+              Type: string
+
+            - Name: Parch
+              Type: string
+
+            - Name: Ticket
+              Type: string
+
+            - Name: Fare
+              Type: string
+
+            - Name: Cabin
+              Type: string
+
+            - Name: Embarked
+              Type: string
+
+  RawAtomicEventsCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}}}"
+      DatabaseName: !Ref DataLakeRawDatabase
+      Description: Raw Atomic Events Crawler
+      Name: raw-atomic-events-crawler
+      Role: !Ref IamRoleDataLakeGlue
+      Schedule:
+        ScheduleExpression: 'cron(0 12 * * ? *)'
+      SchemaChangePolicy:
+        DeleteBehavior: DEPRECATE_IN_DATABASE
+        UpdateBehavior: UPDATE_IN_DATABASE
+      Targets:
+        S3Targets:
+          - Path: !Join ['/', ['s3:/', !ImportValue data-lake-DataLakeRawBucketName, 'atomic_events']]
+
+  IamRoleDataLakeGlue:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: iam-role-service-datalake-glue
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: sts:AssumeRole
+          -
+            Sid: TrustRelationship
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - Ref: IamAccessPolicyDataLakeGlue
+      Path: /
+
+  IamProfileDataLakeGlue:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: IamRoleDataLakeGlue
+    Properties:
+      Path: /
+      Roles:
+        - Ref: IamRoleDataLakeGlue
+
+  IamAccessPolicyDataLakeGlue:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to give Glue role access to data lake
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - !ImportValue data-lake-DataLakeRawBucketArn
+              - !Join ["/", [!ImportValue data-lake-DataLakeRawBucketArn, "*"]]
+              - !ImportValue data-lake-DataLakeProcessedBucketArn
+              - !Join ["/", [!ImportValue data-lake-DataLakeProcessedBucketArn, "*"]]
+              - !ImportValue data-lake-DataLakeCuratedBucketArn
+              - !Join ["/", [!ImportValue data-lake-DataLakeCuratedBucketArn, "*"]]
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - glue:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - arn:aws:logs:*:*:/aws-glue/*

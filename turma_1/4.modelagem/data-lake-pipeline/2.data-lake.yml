@@ -1,0 +1,214 @@
+Description: Creates Data Lake
+
+Resources:
+
+  DataLakeEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Data lake encryption key
+      Enabled: true
+      EnableKeyRotation: true
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Action: kms:*
+            Resource: '*'
+
+  DataLakeRawBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-raw
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: abort-incomplete-multipart-uploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: move-old-objects-to-intelligent-tiering
+            Status: Enabled
+            Transitions:
+              - StorageClass: INTELLIGENT_TIERING
+                TransitionInDays: 90
+          - Id: move-old-versions-to-cheaper-tiering
+            Status: Enabled
+            NoncurrentVersionTransitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+
+  DataLakeProcessedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-processed
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  DataLakeCuratedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-curated
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  DataLakeRawDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Raw data
+        LocationUri: !Join ['/', ['s3:/', !Ref DataLakeRawBucket]]
+        Name: data_lake_raw
+
+  DataLakeProcessedDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Processed data
+        LocationUri: !Join ['/', ['s3:/', !Ref DataLakeProcessedBucket]]
+        Name: data_lake_processed
+
+  DataLakeCuratedDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Curated data
+        LocationUri: !Join ['/', ['s3:/', !Ref DataLakeCuratedBucket]]
+        Name: data_lake_curated
+
+  AthenaDataEngineerWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Description: Workgroup para engenheiros de dados executarem queries
+      Name: athena-data-engineer-workgroup
+      RecursiveDeleteOption: False
+      State: ENABLED
+      WorkGroupConfiguration:
+        BytesScannedCutoffPerQuery: 1000000000
+        EnforceWorkGroupConfiguration: True
+        PublishCloudWatchMetricsEnabled: True
+        ResultConfiguration:
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+          OutputLocation: !Join ['/', ['s3:/', !Ref AthenaResultsBucket]]
+
+  AthenaResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-athena-results
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  IamRoleDataLakeGlue:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: iam-role-service-datalake-glue
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: sts:AssumeRole
+          - Sid: TrustRelationship
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - Ref: IamAccessPolicyDataLakeGlue
+      Path: /
+
+  IamProfileDataLakeGlue:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: IamRoleDataLakeGlue
+    Properties:
+      Path: /
+      Roles:
+        - Ref: IamRoleDataLakeGlue
+
+  IamAccessPolicyDataLakeGlue:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to give Glue role access to data lake
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - glue:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - arn:aws:logs:*:*:/aws-glue/*
+
+Outputs:
+  DataLakeRawBucket:
+    Value: !Ref DataLakeRawBucket
+    Export:
+      Name: DataLakeRawBucket
+
+  DataLakeProcessedBucket:
+    Value: !Ref DataLakeProcessedBucket
+    Export:
+      Name: DataLakeProcessedBucket
+
+  DataLakeCuratedBucket:
+    Value: !Ref DataLakeCuratedBucket
+    Export:
+      Name: DataLakeCuratedBucket
+
+  DataLakeEncryptionKeyId:
+    Value: !Ref DataLakeEncryptionKey
+    Export:
+      Name: DataLakeEncryptionKeyId
+
+  DataLakeEncryptionKeyArn:
+    Value: !GetAtt DataLakeEncryptionKey.Arn
+    Export:
+      Name: DataLakeEncryptionKeyArn

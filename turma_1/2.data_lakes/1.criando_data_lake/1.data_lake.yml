@@ -1,0 +1,95 @@
+Description: Creates Data Lake
+
+Resources:
+
+  DataLakeRawBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-raw
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: abort-incomplete-multipart-uploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: move-old-objects-to-intelligent-tiering
+            Status: Enabled
+            Transitions:
+              - StorageClass: INTELLIGENT_TIERING
+                TransitionInDays: 90
+          - Id: move-old-versions-to-cheaper-tiering
+            Status: Enabled
+            NoncurrentVersionTransitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+
+  DataLakeProcessedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-processed
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  DataLakeCuratedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-data-lake-curated
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  DataLakeRawBucketArn:
+    Value: !GetAtt DataLakeRawBucket.Arn
+    Export:
+      Name: data-lake-DataLakeRawBucketArn
+
+  DataLakeProcessedBucketArn:
+    Value: !GetAtt DataLakeProcessedBucket.Arn
+    Export:
+      Name: data-lake-DataLakeProcessedBucketArn
+
+  DataLakeCuratedBucketArn:
+    Value: !GetAtt DataLakeCuratedBucket.Arn
+    Export:
+      Name: data-lake-DataLakeCuratedBucketArn
+
+  DataLakeRawBucketName:
+    Value: !Ref DataLakeRawBucket
+    Export:
+      Name: data-lake-DataLakeRawBucketName
+
+  DataLakeProcessedBucketName:
+    Value: !Ref DataLakeProcessedBucket
+    Export:
+      Name: data-lake-DataLakeProcessedBucketName
+
+  DataLakeCuratedBucketName:
+    Value: !Ref DataLakeCuratedBucket
+    Export:
+      Name: data-lake-DataLakeCuratedBucketName
+

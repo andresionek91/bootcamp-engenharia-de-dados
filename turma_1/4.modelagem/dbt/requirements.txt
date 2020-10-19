@@ -1,0 +1,2 @@
+dbt
+git+https://github.com/Dandandan/dbt-athena.git

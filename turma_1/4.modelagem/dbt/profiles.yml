@@ -1,0 +1,10 @@
+athena:
+  target: athena
+  outputs:
+    athena:
+      type: athena
+      database: awsdatacatalog
+      schema: data_lake_curated
+      region_name: us-east-1
+      threads: 4
+      s3_staging_dir: s3://s3-belisco-production-athena-results

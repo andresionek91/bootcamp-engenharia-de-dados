@@ -1,0 +1,28 @@
+Description: Athena workgroup
+
+Resources:
+
+  AthenaDataEngineerWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Description: Workgroup para engenheiros de dados executarem queries
+      Name: athena-data-engineer-workgroup
+      RecursiveDeleteOption: False
+      State: ENABLED
+      WorkGroupConfiguration:
+        BytesScannedCutoffPerQuery: 1000000000
+        EnforceWorkGroupConfiguration: True
+        PublishCloudWatchMetricsEnabled: True
+        ResultConfiguration:
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+          OutputLocation: !Join ['/', ['s3:/', !Ref AthenaResultsBucket]]
+
+  AthenaResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-athena-results
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256

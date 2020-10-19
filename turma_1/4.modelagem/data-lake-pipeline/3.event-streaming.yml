@@ -1,0 +1,221 @@
+Description: Cria um Kinesis Stream e um Kinesis Data Firehose que vai salvar o stream de dados para um bucket S3.
+
+Resources:
+
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: kinesis-raw-events-stream
+      RetentionPeriodHours: 24
+      ShardCount: 1
+
+  KinesisFirehoseS3Destination:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: kinesis-raw-events-delivery-stream
+      DeliveryStreamType: KinesisStreamAsSource
+      KinesisStreamSourceConfiguration:
+        KinesisStreamARN: !GetAtt KinesisStream.Arn
+        RoleARN: !GetAtt KinesisRole.Arn
+      S3DestinationConfiguration:
+        BucketARN: !Sub
+          - "arn:aws:s3:::${BucketName}"
+          - BucketName : !ImportValue 'DataLakeRawBucket'
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 1
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref KinesisLogGroup
+          LogStreamName: !Ref RawEventsLogStream
+        CompressionFormat: ZIP
+        ErrorOutputPrefix: bad_record_
+        RoleARN: !GetAtt KinesisRole.Arn
+        Prefix: "atomic_events/date=!{timestamp:yyyy}-!{timestamp:MM}-!{timestamp:dd}/"
+
+  KinesisLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: kinesis-firehose-delivery-stream-log-group
+      RetentionInDays: 1
+
+  RawEventsLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref KinesisLogGroup
+      LogStreamName: kinesis-raw-events-delivery-stream-log-stream
+
+  KinesisRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Role to allow Kinesis to save data to S3
+      ManagedPolicyArns:
+        - !Ref KinesisPolicy
+      Path: /
+      RoleName: role-kinesis
+
+  KinesisPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to allow kinesis to access S3
+      Path: /
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:AbortMultipartUpload
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:ListBucketMultipartUploads
+              - s3:PutObject
+            Resource:
+              - !Sub
+                - "arn:aws:s3:::${BucketName}/"
+                - BucketName: !ImportValue 'DataLakeRawBucket'
+              - !Sub
+                - "arn:aws:s3:::${BucketName}/*"
+                - BucketName: !ImportValue 'DataLakeRawBucket'
+          - Effect: Allow
+            Action:
+              - kinesis:DescribeStream
+              - kinesis:GetShardIterator
+              - kinesis:GetRecords
+              - kinesis:ListShards
+            Resource:
+              - !GetAtt KinesisStream.Arn
+          - Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:List*
+              - kms:DescribeKey
+            Resource:
+              - !ImportValue DataLakeEncryptionKeyArn
+          - Effect: Allow
+            Action:
+              - logs:PutLogEvents
+            Resource:
+              - arn:aws:logs:*:*:*
+
+  StreamingEMRCluster:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Applications:
+        - Name: Spark
+        - Name: Hadoop
+        - Name: Hive
+      Instances:
+        MasterInstanceGroup:
+          InstanceCount: 1
+          InstanceType: m4.large
+          Market: ON_DEMAND
+          Name: Master
+        CoreInstanceGroup:
+          InstanceCount: 1
+          InstanceType: m4.large
+          Market: ON_DEMAND
+          Name: Core
+        TerminationProtected: false
+        Ec2SubnetId: !ImportValue networking-Subnet1
+        Ec2KeyName: production
+      Name: EMRCluster
+      LogUri: s3://s3-belisco-production-emr/logs
+      JobFlowRole: !Ref emrEc2InstanceProfile
+      ServiceRole: !Ref emrRole
+      ReleaseLabel: emr-5.30.1
+      VisibleToAllUsers: true
+      Configurations:
+        - Classification: spark-env
+          Configurations:
+            - Classification: export
+              ConfigurationProperties:
+                PYSPARK_PYTHON: /usr/bin/python3
+
+  StreamingStep:
+    Type: AWS::EMR::Step
+    Properties:
+      ActionOnFailure: "CONTINUE"
+      HadoopJarStep:
+        Args:
+          - spark-submit
+          - --deploy-mode
+          - cluster
+          - --master
+          - yarn
+          - --packages
+          - com.qubole.spark/spark-sql-kinesis_2.11/1.1.3-spark_2.4
+          - --conf
+          - "log4j.rootCategory=INFO, console"
+          - !Sub s3://${EMRBucket}/jobs/streaming.py
+          - !Ref KinesisStream
+          - !Ref 'AWS::Region'
+        Jar: command-runner.jar
+        MainClass: ""
+      JobFlowId: !Ref StreamingEMRCluster
+      Name: "streaming-raw-to-processed-events-job"
+
+  EMRBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3-belisco-production-emr
+
+  emrRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: elasticmapreduce.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole'
+        - !Ref S3EMRPolicy
+
+  S3EMRPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Politicas de acesso para EMR
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - "*"
+
+  emrEc2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role'
+
+  emrEc2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref emrEc2Role

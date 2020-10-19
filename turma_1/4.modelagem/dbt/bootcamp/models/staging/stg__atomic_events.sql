@@ -1,0 +1,38 @@
+{{
+    config(
+        materialized='table'
+    )
+}}
+
+select
+  event_timestamp,
+  event_type,
+  page_url,
+  page_url_path,
+  referer_url,
+  referer_url_scheme,
+  referer_url_port,
+  referer_medium,
+  utm_medium,
+  utm_source,
+  utm_content,
+  utm_campaign,
+  click_id,
+  geo_latitude,
+  geo_longitude,
+  geo_country,
+  geo_timezone,
+  geo_region_name,
+  ip_address,
+  browser_name,
+  browser_user_agent,
+  browser_language,
+  os,
+  os_name,
+  os_timezone,
+  device_type,
+  device_is_mobile,
+  user_custom_id,
+  user_domain_id,
+  date
+from {{ source('data_lake_raw', 'atomic_events') }}
