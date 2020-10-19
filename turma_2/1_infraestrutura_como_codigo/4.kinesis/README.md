@@ -24,6 +24,7 @@ Uso:
     cd my-project/
     virtualenv venv
     source venv/bin/activate
+    # venv\Scripts\activate.bat no Windows
     ```
 1. Instalar as dependências de requirements.txt 
     ```
