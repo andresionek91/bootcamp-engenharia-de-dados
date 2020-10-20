@@ -7,7 +7,7 @@ client = boto3.client('firehose')
 
 
 def put_record(event):
-    data = json.dumps(event).encode('utf-8')
+    data = json.dumps(event, separators=(',', ':')).encode('utf-8')
     response = client.put_record(
         DeliveryStreamName='kinesis-firehose-delivery-stream',
         Record={
