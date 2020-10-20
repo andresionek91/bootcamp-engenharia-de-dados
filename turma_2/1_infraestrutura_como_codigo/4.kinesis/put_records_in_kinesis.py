@@ -7,7 +7,7 @@ client = boto3.client('kinesis')
 
 
 def put_record(event):
-    data = (json.dumps(event, separators=(',', ':')) + '\r\n').encode('utf-8')
+    data = (json.dumps(event) + '\n').encode('utf-8')
     response = client.put_record(
         StreamName='kinesis-stream',
         Data=data,

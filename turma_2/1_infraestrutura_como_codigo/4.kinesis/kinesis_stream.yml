@@ -12,12 +12,12 @@ Resources:
   KinesisFirehoseS3Destination:
     Type: AWS::KinesisFirehose::DeliveryStream
     Properties:
-      DeliveryStreamName: kinesis-firehose-delivery-stream
+      DeliveryStreamName: kinesis-firehose-s3-delivery-stream
       DeliveryStreamType: KinesisStreamAsSource
       KinesisStreamSourceConfiguration:
         KinesisStreamARN: !GetAtt KinesisStream.Arn
         RoleARN: !GetAtt KinesisRole.Arn
-      S3DestinationConfiguration:
+      ExtendedS3DestinationConfiguration:
         BucketARN: !GetAtt KinesisFirehoseBucket.Arn
         BufferingHints:
           IntervalInSeconds: 60
@@ -29,6 +29,7 @@ Resources:
         CompressionFormat: ZIP
         ErrorOutputPrefix: bad_record_
         RoleARN: !GetAtt KinesisRole.Arn
+        Prefix: "atomic_events/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/"
 
   KinesisLogGroup:
     Type: AWS::Logs::LogGroup

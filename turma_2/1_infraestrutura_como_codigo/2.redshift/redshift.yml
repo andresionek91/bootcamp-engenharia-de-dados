@@ -22,6 +22,8 @@ Resources:
       NodeType: dc2.large # https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html
       NumberOfNodes: 2
       PubliclyAccessible: true
+      IamRoles:
+        - !GetAtt RedshiftRole.Arn
 
   RedshiftSubnetGroup:
     Type: 'AWS::Redshift::ClusterSubnetGroup'
@@ -103,3 +105,61 @@ Resources:
     Properties:
       RouteTableId: !Ref RedshiftRouteTable
       SubnetId: !Ref RedshiftSubnet
+
+  RedshiftRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version : 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - redshift.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      RoleName: iam-redshift-role
+
+  RedshiftSpectrumPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource:
+              - arn:aws:s3:::*
+          - Effect: Allow
+            Action:
+              - glue:CreateDatabase
+              - glue:DeleteDatabase
+              - glue:GetDatabase
+              - glue:GetDatabases
+              - glue:UpdateDatabase
+              - glue:CreateTable
+              - glue:DeleteTable
+              - glue:BatchDeleteTable
+              - glue:UpdateTable
+              - glue:GetTable
+              - glue:GetTables
+              - glue:BatchCreatePartition
+              - glue:CreatePartition
+              - glue:DeletePartition
+              - glue:BatchDeletePartition
+              - glue:UpdatePartition
+              - glue:GetPartition
+              - glue:GetPartitions
+              - glue:BatchGetPartition
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - athena:*
+            Resource:
+              - "*"
+      PolicyName: redshiftSpectrum
+      Roles:
+        - !Ref RedshiftRole
