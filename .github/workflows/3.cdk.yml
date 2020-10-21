@@ -32,4 +32,5 @@ jobs:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       run: |
         cd turma_2/2_integracao_continua_e_testes/3.CDK
+        cdk synth
         cdk deploy
