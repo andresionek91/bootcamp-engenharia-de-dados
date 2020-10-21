@@ -1,0 +1,170 @@
+Description: Cria um cluster Redshift que é publicamente acessível a partir da internet.
+
+Resources:
+
+  RedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      AllowVersionUpgrade: true
+      AutomatedSnapshotRetentionPeriod: 5
+      AvailabilityZone: us-east-1a
+      ClusterIdentifier: redshift-{{ ENVIRONMENT }}-cluster
+      ClusterParameterGroupName: !Ref RedshiftParameterGroup
+      ClusterSubnetGroupName: !Ref RedshiftSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref RedshiftEC2SecurityGroup
+      ClusterType: multi-node
+      DBName: {{ redshiftCluster.dbName }}
+      Encrypted: true
+      MasterUsername: {{ redshiftClusterMasterUsername }}
+      MasterUserPassword: {{ redshiftClusterMasterUserPassword }}
+      NodeType: {{ redshiftCluster.nodeType }}
+      NumberOfNodes: {{ redshiftCluster.numberOfNodes }}
+      PubliclyAccessible: true
+      IamRoles:
+        - !GetAtt RedshiftRole.Arn
+
+  RedshiftSubnetGroup:
+    Type: 'AWS::Redshift::ClusterSubnetGroup'
+    Properties:
+      Description: Redshift Subnet group
+      SubnetIds:
+        - !Ref RedshiftSubnet
+
+  RedshiftParameterGroup:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: Parameter group for redshift cluster
+      ParameterGroupFamily: redshift-1.0
+      Parameters:
+        - ParameterName: max_concurrency_scaling_clusters
+          ParameterValue: 0
+
+  {% for env in environments %}
+  {% if env.name == ENVIRONMENT %}
+  RedshiftVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: {{ env.vpcCidrBlock }}
+
+  RedshiftSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      CidrBlock: {{ env.subnetCidrBlock }}
+      VpcId: !Ref RedshiftVPC
+  {% endif %}
+  {% endfor %}
+
+  RedshiftEC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Redshift. Public access
+      GroupName: redshift-{{ ENVIRONMENT }}-security-group
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 5439
+          IpProtocol: tcp
+          ToPort: 5439
+      SecurityGroupIngress:
+      {% for ip in redshiftCluster.securityGroup.whitelistedIps %}
+        - CidrIp: {{ ip }}
+          FromPort: 5439
+          IpProtocol: tcp
+          ToPort: 5439
+      {% endfor %}
+      VpcId: !Ref RedshiftVPC
+
+  RedshiftEC2SecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt RedshiftEC2SecurityGroup.GroupId
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId: !GetAtt RedshiftEC2SecurityGroup.GroupId
+
+  RedshiftVPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  RedshiftVPCAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref RedshiftVPC
+      InternetGatewayId: !Ref RedshiftVPCInternetGateway
+
+  RedshiftRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref RedshiftVPC
+
+  RedshiftVPCRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref RedshiftVPCInternetGateway
+      RouteTableId: !Ref RedshiftRouteTable
+
+  RedshiftSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RedshiftRouteTable
+      SubnetId: !Ref RedshiftSubnet
+
+  RedshiftRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version : 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - redshift.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      RoleName: iam-{{ ENVIRONMENT }}-redshift-role
+
+  RedshiftSpectrumPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource:
+              - arn:aws:s3:::*
+          - Effect: Allow
+            Action:
+              - glue:CreateDatabase
+              - glue:DeleteDatabase
+              - glue:GetDatabase
+              - glue:GetDatabases
+              - glue:UpdateDatabase
+              - glue:CreateTable
+              - glue:DeleteTable
+              - glue:BatchDeleteTable
+              - glue:UpdateTable
+              - glue:GetTable
+              - glue:GetTables
+              - glue:BatchCreatePartition
+              - glue:CreatePartition
+              - glue:DeletePartition
+              - glue:BatchDeletePartition
+              - glue:UpdatePartition
+              - glue:GetPartition
+              - glue:GetPartitions
+              - glue:BatchGetPartition
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - athena:*
+            Resource:
+              - "*"
+      PolicyName: iam-{{ ENVIRONMENT }}-redshift-spectrum-policy
+      Roles:
+        - !Ref RedshiftRole
