@@ -2,7 +2,7 @@ Description: Cria um Bucket S3
 
 Resources:
 
-  MeuPrimeiroBucket:
+  MeuSegundoBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: meu-segundo-bucket-belisco

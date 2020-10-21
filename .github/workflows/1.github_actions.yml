@@ -2,7 +2,8 @@ name: Deploy S3 bucket
 
 on:
   push:
-    branches: [ s3-bucket ]
+    branches:
+      - 1.github_actions
 
 jobs:
   deploy:
