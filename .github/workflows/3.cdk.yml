@@ -13,7 +13,7 @@ jobs:
         uses: youyo/aws-cdk-github-actions@v1
         with:
           cdk_subcommand: 'deploy'
-          cdk_stack: 'meu bucket'
+          cdk_stack: 's3-bucket-cdk'
           actions_comment: false
           args: '--require-approval never'
         env:
