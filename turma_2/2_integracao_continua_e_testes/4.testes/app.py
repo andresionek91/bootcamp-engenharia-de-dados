@@ -6,5 +6,5 @@ from s3_stack.s3_stack import S3Stack
 
 
 app = core.App()
-S3Stack(app, "s3-stack-cdk")
+S3Stack(app, "s3-stack-cdk-testes")
 app.synth()
