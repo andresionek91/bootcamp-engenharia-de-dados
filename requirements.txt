@@ -3,3 +3,4 @@ fake-web-events
 pyathena
 pyaml
 jinja2
+pytest
