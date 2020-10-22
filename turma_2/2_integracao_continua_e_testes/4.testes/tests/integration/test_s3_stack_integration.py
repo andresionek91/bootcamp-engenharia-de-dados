@@ -10,5 +10,5 @@ def list_buckets_names():
 
 
 def test_bucket_belisco_created_integration():
-    assert("meu-bucket-belisco-cdk" in list_buckets_names())
+    assert("meu-bucket-belisco-cdk-testes" in list_buckets_names())
 
