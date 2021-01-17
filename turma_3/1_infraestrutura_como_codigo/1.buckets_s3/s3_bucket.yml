@@ -1,0 +1,18 @@
+# Este template cria um bucket S3. Não esqueça de deletar os recursos depois de criar/testar.
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html
+# Alguns recursos estão inclusos no free tier e são gratuitos por 1 ano, outros já serão cobrados por hora/minuto de uso.
+Description: Cria um Bucket S3
+
+Resources:
+
+  MeuPrimeiroBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption: # Criptografar o bucket é opcional, mas é uma boa prática.
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: meu-primeiro-bucket-belisco # Nome do bucket precisa ser único em toda a AWS.
+
+      # Existem mais propriedades opcionais para um bucket S3 que você pode ver aqui:
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-s3-bucket.html

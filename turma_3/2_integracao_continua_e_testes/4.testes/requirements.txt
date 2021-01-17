@@ -1,0 +1,4 @@
+-e .
+aws_cdk.aws_s3
+pytest
+boto3

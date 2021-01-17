@@ -1,0 +1,7 @@
+README.md
+setup.py
+s3_stack/s3_stack.egg-info/PKG-INFO
+s3_stack/s3_stack.egg-info/SOURCES.txt
+s3_stack/s3_stack.egg-info/dependency_links.txt
+s3_stack/s3_stack.egg-info/requires.txt
+s3_stack/s3_stack.egg-info/top_level.txt

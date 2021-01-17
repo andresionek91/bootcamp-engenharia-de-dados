@@ -1,0 +1,53 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree"
+      },
+      "s3-stack-cdk": {
+        "id": "s3-stack-cdk",
+        "path": "s3-stack-cdk",
+        "children": {
+          "meu-bucket-belisco-cdk": {
+            "id": "meu-bucket-belisco-cdk",
+            "path": "s3-stack-cdk/meu-bucket-belisco-cdk",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "s3-stack-cdk/meu-bucket-belisco-cdk/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketName": "meu-bucket-belisco-cdk"
+                  }
+                }
+              },
+              "Notifications": {
+                "id": "Notifications",
+                "path": "s3-stack-cdk/meu-bucket-belisco-cdk/Notifications"
+              }
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "s3-stack-cdk/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "s3-stack-cdk/CDKMetadata/Default"
+              },
+              "Condition": {
+                "id": "Condition",
+                "path": "s3-stack-cdk/CDKMetadata/Condition"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
