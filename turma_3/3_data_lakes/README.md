@@ -1,3 +1,4 @@
 # Data Lakes
 
-O código desenvolvido durante esta aula está disponível em outro repositório: https://github.com/andresionek91/bootcamp-data-platform
+A partir daqui todo o conteúdo é desenvolvido utilizando AWS CDK. Para instruções sobre como instalar e fazer o setup básico, veja o conteúdo da aula 2.
+
