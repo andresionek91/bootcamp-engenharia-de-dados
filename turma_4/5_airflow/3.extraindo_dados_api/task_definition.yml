@@ -1,0 +1,86 @@
+Description: Creates Airflow Webserver Service
+
+Resources:
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "crypto-extract-production-ecs-task-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "ECSTaskRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ecr:GetAuthorizationToken"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:ListBuckets"
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::s3-belisco-production-data-lake-raw"
+                  - "arn:aws:s3:::s3-belisco-production-data-lake-raw/*"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: 512
+      Memory: 1024
+      ExecutionRoleArn: !Ref ECSTaskRole
+      TaskRoleArn: !Ref ECSTaskRole
+      Family: "production-crypto-extract-image"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: "production-crypto-extract-image"
+          Image: !Sub
+            - "${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/production-crypto-extract-image:latest"
+            - ecr_repository: crypto-extract-image
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: airflow-production-ecs-log-group
+              awslogs-region: us-east-1
+              awslogs-stream-prefix: crypto-extract
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Airflow webserver. Allow all inbound traffic.
+      GroupName: "api-extract-security-group"
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 0
+          IpProtocol: -1
+          ToPort: 0
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 0
+          IpProtocol: -1
+          ToPort: 0
+      VpcId: vpc-0b80e484ad754b405
+
+
+Outputs:
+  SecurityGroup:
+    Value: !Ref SecurityGroup

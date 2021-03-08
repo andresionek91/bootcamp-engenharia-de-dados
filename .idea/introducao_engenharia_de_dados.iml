@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/turma_3/3_data_lakes/1.DataLakes" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/turma_3/3_data_lakes/1.DataLakes/data_platform" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.env" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.8 (introducao_engenharia_de_dados)" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

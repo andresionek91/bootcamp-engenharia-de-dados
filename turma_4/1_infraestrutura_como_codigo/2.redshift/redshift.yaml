@@ -1,0 +1,93 @@
+Resources:
+
+  BeliscoRedshift:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      AllowVersionUpgrade: true
+      AutomatedSnapshotRetentionPeriod: 5
+      AvailabilityZone: us-east-1a
+      ClusterIdentifier: my-redshift-cluster
+      ClusterParameterGroupName: !Ref RedshiftParameterGroup
+      ClusterSubnetGroupName: !Ref RedshiftSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref RedshiftEC2SecurityGroup
+      ClusterType: multi-node
+      DBName: production
+      Encrypted: true
+      MasterUsername: admin
+      MasterUserPassword: Admin1234
+      NodeType: dc2.large
+      NumberOfNodes: 2
+      PubliclyAccessible: true
+
+  RedshiftParameterGroup:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: Parameter group for redshift cluster
+      ParameterGroupFamily: redshift-1.0
+      Parameters:
+        - ParameterName: max_concurrency_scaling_clusters
+          ParameterValue: 1
+
+  RedshiftSubnetGroup:
+    Type: 'AWS::Redshift::ClusterSubnetGroup'
+    Properties:
+      Description: Redshift Subnet group
+      SubnetIds:
+        - !Ref RedshiftSubnet
+
+  RedshiftSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.0.0/24
+      VpcId: !Ref RedshiftVPC
+
+  RedshiftVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+
+  RedshiftEC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Redshift. Public access
+      GroupName: redshift-security-group
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 5439
+          IpProtocol: tcp
+          ToPort: 5439
+      SecurityGroupIngress:
+        - CidrIp: 37.156.75.55/32
+          FromPort: 5439
+          IpProtocol: tcp
+          ToPort: 5439
+      VpcId: !Ref RedshiftVPC
+
+  RedshiftVPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  RedshiftVPCAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref RedshiftVPC
+      InternetGatewayId: !Ref RedshiftVPCInternetGateway
+
+  RedshiftRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref RedshiftVPC
+
+  RedshiftVPCRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref RedshiftVPCInternetGateway
+      RouteTableId: !Ref RedshiftRouteTable
+
+  RedshiftSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RedshiftRouteTable
+      SubnetId: !Ref RedshiftSubnet

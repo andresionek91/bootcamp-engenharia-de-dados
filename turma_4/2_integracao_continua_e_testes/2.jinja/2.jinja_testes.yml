@@ -1,0 +1,23 @@
+## Esse arquivo deve ficar dentro de .github/workflows
+name: Deploy S3 bucket
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r tests/requirements.txt
+    - name: Run tests
+      run: python -m pytest

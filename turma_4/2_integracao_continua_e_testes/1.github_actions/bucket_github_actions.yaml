@@ -1,0 +1,20 @@
+Description: Cria bucket no S3
+
+Resources:
+
+  BucketBeliscoS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bucket-belisco-turma-4-github-actions
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+
+
+

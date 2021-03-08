@@ -1,0 +1,13 @@
+{
+  "Name": "Andre Sionek",
+  "Country": "UK",
+  "Sports": [
+    "Cycling",
+    "Walking",
+    "Running"
+  ],
+  "Address": {
+    "Street": "10 Sutton Plaza",
+    "House": "Flat 60"
+  }
+}

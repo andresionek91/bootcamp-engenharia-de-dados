@@ -1,0 +1,85 @@
+{
+  "version": "6.0.0",
+  "artifacts": {
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "s3-stack-cdk": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "s3-stack-cdk.template.json"
+      },
+      "metadata": {
+        "/s3-stack-cdk/meu-bucket-belisco-cdk/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "meubucketbeliscocdkD5855D54",
+            "trace": [
+              "new Bucket (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/aws-s3/lib/bucket.js:435:26)",
+              "/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7934:49",
+              "Kernel._wrapSandboxCode (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:8419:20)",
+              "Kernel._create (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7934:26)",
+              "Kernel.create (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7678:21)",
+              "KernelHost.processRequest (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7458:28)",
+              "KernelHost.run (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7396:14)",
+              "Immediate._onImmediate (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7399:37)",
+              "processImmediate (internal/timers.js:461:21)"
+            ]
+          }
+        ],
+        "/s3-stack-cdk/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata",
+            "trace": [
+              "new MetadataResource (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/metadata-resource.js:22:30)",
+              "/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:127:9",
+              "visit (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:181:9)",
+              "visit (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:178:9)",
+              "injectMetadataResources (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:116:5)",
+              "Object.synthesize (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:16:5)",
+              "App.synth (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/stage.js:82:41)",
+              "/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7758:51",
+              "Kernel._wrapSandboxCode (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:8419:20)",
+              "/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7758:25",
+              "Kernel._ensureSync (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:8395:20)",
+              "Kernel.invoke (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7757:26)",
+              "KernelHost.processRequest (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7458:28)",
+              "KernelHost.run (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7396:14)",
+              "Immediate._onImmediate (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7399:37)",
+              "processImmediate (internal/timers.js:461:21)"
+            ]
+          }
+        ],
+        "/s3-stack-cdk/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable",
+            "trace": [
+              "new MetadataResource (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/metadata-resource.js:30:35)",
+              "/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:127:9",
+              "visit (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:181:9)",
+              "visit (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:178:9)",
+              "injectMetadataResources (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:116:5)",
+              "Object.synthesize (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/private/synthesis.js:16:5)",
+              "App.synth (/private/var/folders/53/z1x6rlv96m5bqwwr2pbqlg0h0000gp/T/jsii-kernel-5dgU5w/node_modules/@aws-cdk/core/lib/stage.js:82:41)",
+              "/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7758:51",
+              "Kernel._wrapSandboxCode (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:8419:20)",
+              "/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7758:25",
+              "Kernel._ensureSync (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:8395:20)",
+              "Kernel.invoke (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7757:26)",
+              "KernelHost.processRequest (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7458:28)",
+              "KernelHost.run (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7396:14)",
+              "Immediate._onImmediate (/Users/andre.sionek/andre/introducao_engenharia_de_dados/venv/lib/python3.7/site-packages/jsii/_embedded/jsii/jsii-runtime.js:7399:37)",
+              "processImmediate (internal/timers.js:461:21)"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
