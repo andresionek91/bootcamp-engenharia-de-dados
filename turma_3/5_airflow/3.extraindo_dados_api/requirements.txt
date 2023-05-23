@@ -1,4 +1,4 @@
-requests==2.24.0
+requests==2.31.0
 backoff==1.10.0
 ratelimit==2.2.1
 boto3==1.13.16
